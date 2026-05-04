@@ -5,6 +5,12 @@
   command = "node build.js"
   publish = "."
 
+# El hash de la password se inyecta a propósito en index.html durante el build.
+# Excluimos esa env var del secrets scanner de Netlify; el hash sigue siendo
+# visible en el JS del cliente (no es secreto real, ver README).
+[build.environment]
+  SECRETS_SCAN_OMIT_KEYS = "DASHBOARD_PASSWORD_HASH"
+
 # Headers de seguridad para todo el shell
 [[headers]]
   for = "/*"
