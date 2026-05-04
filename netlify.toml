@@ -1,0 +1,35 @@
+# Configuración Netlify para Dashboard WIN
+# El build inyecta el hash de la password desde la env var DASHBOARD_PASSWORD_HASH.
+
+[build]
+  command = "node build.js"
+  publish = "."
+
+# Headers de seguridad para todo el shell
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=()"
+    # CSP: permitimos inline scripts/styles porque todo el JS y CSS vive en index.html.
+    # frame-src abre Power BI. img-src abre data: y https: para los logos remotos si los hubiera.
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; frame-src https://app.powerbi.com https://*.powerbi.com; connect-src 'self'; manifest-src 'self'; worker-src 'self'; base-uri 'self'; form-action 'self';"
+
+# El service worker y el HTML no se cachean en CDN, así actualizamos en cada deploy
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+# Manifest revalidado para reflejar cambios de branding rápido
+[[headers]]
+  for = "/manifest.webmanifest"
+  [headers.values]
+    Cache-Control = "no-cache"
+    Content-Type = "application/manifest+json"

@@ -1,13 +1,13 @@
 {
-  "name": "Dashboard Cliente",
-  "short_name": "Dashboard",
-  "description": "Dashboard de inteligencia para cliente",
+  "name": "Dashboard WIN",
+  "short_name": "WIN",
+  "description": "Dashboard de inteligencia WIN, by Reset",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#050b2e",
-  "theme_color": "#050b2e",
+  "background_color": "#0a0a0a",
+  "theme_color": "#ff6b1a",
   "lang": "es-PE",
   "icons": [
     {

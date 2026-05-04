@@ -41,18 +41,18 @@ las barras nativas. Otros parámetros útiles:
 
 ### 2. Genera el hash de tu contraseña
 
-La password no va en el código en plaintext, va su hash SHA-256.
+La password no va en el repo. Se inyecta en build desde una env var de Netlify.
 
-Abre la consola del navegador (cualquier página) y corre:
-
-```js
-crypto.subtle.digest("SHA-256", new TextEncoder().encode("TU_PASSWORD_AQUI"))
-  .then(b => console.log([...new Uint8Array(b)].map(x => x.toString(16).padStart(2,"0")).join("")))
+```bash
+node scripts/generate-hash.js "MI_PASSWORD"
+# imprime: pbkdf2$100000$<saltHex>$<hashHex>
 ```
 
-Copia el string de 64 caracteres que imprime y pégalo en `passwordHash`.
+Pega esa línea completa en Netlify, en **Site settings → Environment variables**, con el nombre `DASHBOARD_PASSWORD_HASH`. En cada deploy, `build.js` la sustituye dentro de `index.html`.
 
-> Default actual: hash de `demo123` (cámbialo antes de producción).
+> En `index.html`, `CONFIG.passwordHash` queda con el placeholder `__DASHBOARD_PASSWORD_HASH__`. Si servís sin pasar por `build.js`, el script local cae a un hash demo (password `demo123`) y avisa por stderr. **No subas un build con ese fallback a producción.**
+
+Alternativa más rápida (sin generar hash a mano): definí `DASHBOARD_PASSWORD` en Netlify y `build.js` deriva el hash en cada deploy. Eso invalida las sesiones recordadas en cada build (salt nuevo cada vez), así que lo recomendado es `DASHBOARD_PASSWORD_HASH`.
 
 ### 3. Reemplaza los iconos y logos
 
@@ -64,20 +64,14 @@ Copia el string de 64 caracteres que imprime y pégalo en `passwordHash`.
 
 ## Deploy
 
-Cualquier hosting estático sirve. Sin backend.
+### Netlify (configuración actual)
+1. Conectá el repo en Netlify. El `netlify.toml` define build command (`node build.js`) y publish dir (`.`).
+2. En **Site settings → Environment variables** definí `DASHBOARD_PASSWORD_HASH` con el valor que generaste en el paso 2.
+3. Push a la branch que despliega Netlify. El build sustituye el placeholder y publica.
 
-### Cloudflare Pages (recomendado, gratis, rápido)
-1. `git init && git add . && git commit -m "init"`
-2. Sube a GitHub.
-3. Cloudflare Pages → Connect repo → build command vacío, output dir `/`.
-
-### Vercel
-```
-npx vercel --prod
-```
-
-### Netlify drop
-Arrastra la carpeta a https://app.netlify.com/drop
+### Otros hostings
+- **Cloudflare Pages / Vercel**: replicar el build command (`node build.js`), publish dir `/`, y la misma env var.
+- **Netlify drop / hostings sin build**: corré `node build.js` local con la env var seteada, y subí la carpeta resultante.
 
 ### IMPORTANTE: HTTPS obligatorio
 El service worker y la PWA solo funcionan sobre HTTPS (o `localhost`).
@@ -98,6 +92,11 @@ Una vez instalada, abre como app independiente, sin barra de navegador.
 - **Login client-side**: NO es seguridad real. Cualquiera con devtools puede ver el hash
   y, si conoce el link directo del Power BI, accederlo. Es un *gate* visual y de UX,
   no un firewall. El link de Publish to Web ya es público por definición.
+- **Hash en repo vs en secreto**: el hash ya no vive en `index.html` del repo. Se inyecta
+  desde la env var `DASHBOARD_PASSWORD_HASH` durante el build de Netlify. El hash final
+  sigue siendo visible en el JS servido al cliente, pero no aparece en el código fuente
+  público. Además se usa PBKDF2-SHA-256 con 100k iteraciones para encarecer brute-force
+  offline contra el hash deployado.
 - **Si necesitas seguridad real**: usa Power BI Embedded con backend (Node/FastAPI)
   que genere tokens por usuario. Es otro proyecto.
 - **Service worker** solo cachea el shell (HTML/CSS/icons). El iframe del Power BI

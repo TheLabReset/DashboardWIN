@@ -5,13 +5,15 @@
 // Sube el CACHE_NAME cuando hagas cambios al index.html.
 // ============================================
 
-const CACHE_NAME = "dashboard-wrapper-v1";
+const CACHE_NAME = "dashboard-wrapper-v2";
 const SHELL_ASSETS = [
   "./",
   "./index.html",
   "./manifest.webmanifest",
   "./icon-192.png",
-  "./icon-512.png"
+  "./icon-512.png",
+  "./win-white.png",
+  "./reset-blanco.png"
 ];
 
 // Install: precachea el shell
