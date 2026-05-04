@@ -22,55 +22,60 @@ PWA estática de un solo archivo (`index.html`) que envuelve un iframe a un Powe
 
 ## Restricciones críticas
 
-- `CONFIG.passwordHash` siempre es SHA-256, nunca plaintext.
+- `CONFIG.passwordHash` siempre es PBKDF2 (`pbkdf2$...`) o SHA-256 hex (legacy), nunca plaintext.
+- En el repo, `CONFIG.passwordHash` debe quedar siempre con el placeholder `__DASHBOARD_PASSWORD_HASH__`. Nunca commitear el hash real ni un build sustituido.
 - `sw.js` no debe cachear `app.powerbi.com` ni `*.powerbi.com`. El iframe va siempre a la red.
 - `start_url` y `scope` del manifest se mantienen relativos (`./`).
 - Compatibilidad iOS Safari donde se pueda. APIs solo-Android (`screen.orientation.lock`) van envueltas en try/catch silencioso.
 - Cualquier cambio a un asset cacheado en `sw.js` obliga a bumpear `CACHE_NAME` (ej. `dashboard-wrapper-v1` a `v2`).
+- CSP en `netlify.toml` permite `frame-src` solo a `*.powerbi.com`. Si el iframe migra a otro dominio, hay que actualizar la CSP.
 
 ## Mapa del index.html
 
 | Sección | Líneas |
 |---|---|
 | Meta tags y links (manifest, icons, theme-color) | 1-13 |
-| CSS variables `:root` (paleta) | 14-31 |
-| Reset y body con gradients de fondo | 33-49 |
-| CSS login screen (card, wave, input, submit, footer) | 51-226 |
-| CSS rotation prompt | 228-283 |
-| CSS app screen (header, icon-btn, iframe-wrap, loader) | 285-370 |
-| HTML login screen | 375-418 |
-| HTML rotation prompt | 420-451 |
-| HTML app screen (header + iframe) | 453-492 |
-| `<script>`: objeto `CONFIG` | 498-527 |
-| Setea textos dinámicos e inyecta logos | 533-551 |
-| Helper `sha256` | 554-558 |
-| Refs a pantallas y `showLogin`/`showApp` | 561-588 |
-| Lógica de login (handleLogin, eye toggle, autologin) | 591-651 |
-| Logout, refresh, fullscreen API | 654-691 |
-| Botón fullscreen del rotate prompt y dismiss | 693-706 |
-| Detección de orientation portrait + media query | 709-726 |
-| Registro del service worker | 729-737 |
+| CSS variables `:root` (paleta WIN dark-naranja) | 15-33 |
+| Reset y body con gradients de fondo | 35-50 |
+| CSS login screen (card, wave, input, submit, footer) | 53-232 |
+| CSS rotation prompt | 234-289 |
+| CSS app screen (header, icon-btn, iframe-wrap, loader) | 291-376 |
+| HTML login screen | 381-424 |
+| HTML rotation prompt | 426-457 |
+| HTML app screen (header + iframe) | 459-498 |
+| `<script>`: objeto `CONFIG` (con placeholder de hash) | 504-528 |
+| Setea textos dinámicos e inyecta logos | 535-554 |
+| Helpers de hashing (`sha256Hex`, `hexToBytes`, `verifyPassword`) | 557-595 |
+| Refs a pantallas y `showLogin`/`showApp` | 598-625 |
+| Lógica de login (handleLogin, eye toggle, autologin) | 627-690 |
+| Logout, refresh, fullscreen API | 692-730 |
+| Botón fullscreen del rotate prompt y dismiss | 732-745 |
+| Detección de orientation portrait + media query | 747-765 |
+| Wave: re-disparar al hover de la card | 767-779 |
+| Registro del service worker | 781-789 |
+
+> Las líneas son aproximadas y se desplazan al editar. Usar `grep -n` para anclajes exactos.
 
 ## Comandos comunes
 
 ```bash
-# Servir local (SW funciona en localhost sin HTTPS)
-npx serve . -l 3000
+# Servir local (SW funciona en localhost sin HTTPS).
+# Antes de abrir el browser, correr build.js para sustituir el placeholder.
+DASHBOARD_PASSWORD=demo123 node build.js && npx serve . -l 3000
 
-# Servir con HTTPS self-signed para probar PWA real
-npx http-server -S -C cert.pem -K key.pem .
+# Generar el hash PBKDF2 de una password (la línea se pega en Netlify env var)
+node scripts/generate-hash.js "MI_PASSWORD"
 
-# Generar hash SHA-256 de una password
-node -e "crypto.subtle.digest('SHA-256', new TextEncoder().encode(process.argv[1])).then(b => console.log(Buffer.from(b).toString('hex')))" "MI_PASSWORD"
+# Build Netlify (lo corre el CI). Reemplaza __DASHBOARD_PASSWORD_HASH__ in-place.
+node build.js
 
 # Bumpear cache del SW: editar sw.js, subir CACHE_NAME (v1 -> v2)
-
-# Validar manifest e iconos
-npx pwa-asset-generator --help
 ```
 
-Deploy: Cloudflare Pages (recomendado), Vercel (`npx vercel --prod`) o Netlify drop. Sin build command, output dir `/`.
+Deploy: Netlify es el target oficial (`netlify.toml` define build y headers). Cloudflare Pages / Vercel funcionan replicando el build command y la env var. **Importante**: nunca commitear `index.html` con el hash sustituido. Si por error pasa, revertir el placeholder antes del push.
 
 ## Pendientes
 
-(vacío por ahora)
+- Optimizar `win-white.png` (~302KB), `win-orange.png` (~316KB) y los Reset (~470KB cada uno). PNG de 2880x1620 servidos para mostrar 28-36px de alto es excesivo. Pasarlos a WebP/AVIF o resamplear a tamaños cercanos a los de uso.
+- El logo wordmark de WIN tiene el puntito de la "i" muy arriba, lo que descentra ópticamente la fila de logos en alturas chicas. Revisar alineación vertical (translateY pequeño en `.logos-row img` o un padding compensado solo para el logo de WIN).
+- Theme color de la meta tag (`#0a0a0a`) y del manifest (`#ff6b1a`) están desalineados a propósito (URL bar oscura, splash naranja). Validar que en Android se vea bien, si no, alinear ambos.

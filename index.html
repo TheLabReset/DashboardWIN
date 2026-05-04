@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#0a0a2e">
+<meta name="theme-color" content="#0a0a0a">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
-<title>Dashboard · Reset</title>
+<title>Dashboard WIN · Reset</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" type="image/png" href="icon-192.png">
@@ -16,18 +16,20 @@
      CONFIG VISUAL · CAMBIA AQUÍ COLORES Y TEMA
   ============================================ */
   :root {
-    --bg-1: #050b2e;
-    --bg-2: #0d0a3a;
-    --bg-3: #2a1a5a;
-    --card-bg: rgba(20, 25, 60, 0.55);
+    /* Paleta WIN dark, naranja como acento */
+    --bg-1: #0a0a0a;
+    --bg-2: #141414;
+    --bg-3: #1f1410;
+    --card-bg: rgba(25, 20, 18, 0.6);
     --card-border: rgba(255, 255, 255, 0.08);
-    --text: #e8eaf6;
-    --text-dim: rgba(232, 234, 246, 0.65);
-    --accent-1: #93a5fc;
-    --accent-2: #c4b5fd;
-    --accent-glow: rgba(147, 165, 252, 0.35);
-    --input-bg: rgba(10, 15, 40, 0.5);
-    --input-border: rgba(147, 165, 252, 0.4);
+    --text: #f5f5f5;
+    --text-dim: rgba(245, 245, 245, 0.6);
+    --accent-1: #ff6b1a;
+    --accent-2: #ff8a47;
+    --accent-glow: rgba(255, 107, 26, 0.35);
+    --input-bg: rgba(0, 0, 0, 0.45);
+    --input-border: rgba(255, 107, 26, 0.35);
+    --on-accent: #1a0d05;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -43,8 +45,8 @@
 
   body {
     background:
-      radial-gradient(ellipse 80% 60% at 80% 110%, var(--bg-3) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 50% at 0% 0%, #1a1f5c 0%, transparent 50%),
+      radial-gradient(ellipse 80% 60% at 80% 110%, var(--bg-3) 0%, transparent 65%),
+      radial-gradient(ellipse 60% 50% at 0% 0%, #1a1310 0%, transparent 55%),
       linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
   }
 
@@ -79,15 +81,19 @@
   .wave {
     text-align: center; font-size: 56px; line-height: 1;
     margin-bottom: 8px;
-    animation: wave 1.6s ease-in-out infinite;
-    transform-origin: 70% 70%;
+  }
+  .wave .hand {
+    display: inline-block;
+    transform-origin: 70% 100%;
+    animation: wave 1.4s cubic-bezier(.36, .07, .19, .97) 3;
   }
   @keyframes wave {
-    0%, 60%, 100% { transform: rotate(0deg); }
-    10%, 30% { transform: rotate(14deg); }
-    20% { transform: rotate(-8deg); }
-    40% { transform: rotate(14deg); }
-    50% { transform: rotate(-4deg); }
+    0%   { transform: rotate(0deg); }
+    15%  { transform: rotate(-10deg); }
+    40%  { transform: rotate(12deg); }
+    65%  { transform: rotate(-5deg); }
+    85%  { transform: rotate(8deg); }
+    100% { transform: rotate(0deg); }
   }
 
   .greeting {
@@ -151,7 +157,7 @@
   }
   #password-input:focus {
     border-color: var(--accent-1);
-    box-shadow: 0 0 0 4px rgba(147, 165, 252, 0.1);
+    box-shadow: 0 0 0 4px rgba(255, 107, 26, 0.15);
   }
   #password-input.shake { animation: shake 0.4s; }
   @keyframes shake {
@@ -170,7 +176,7 @@
   .remember-row input { display: none; }
   .checkbox {
     width: 18px; height: 18px;
-    border: 1.5px solid rgba(147, 165, 252, 0.5);
+    border: 1.5px solid rgba(255, 107, 26, 0.45);
     border-radius: 5px;
     display: flex; align-items: center; justify-content: center;
     transition: all 0.2s;
@@ -182,8 +188,8 @@
   .remember-row input:checked + .checkbox::after {
     content: "";
     width: 10px; height: 6px;
-    border-left: 2px solid #0a0f28;
-    border-bottom: 2px solid #0a0f28;
+    border-left: 2px solid var(--on-accent);
+    border-bottom: 2px solid var(--on-accent);
     transform: rotate(-45deg) translate(1px, -1px);
   }
   .remember-row span:last-child {
@@ -197,7 +203,7 @@
     border: 0;
     border-radius: 14px;
     background: linear-gradient(90deg, var(--accent-1) 0%, var(--accent-2) 100%);
-    color: #0a0f28;
+    color: #ffffff;
     font-size: 16px; font-weight: 600;
     font-family: inherit;
     cursor: pointer;
@@ -211,8 +217,8 @@
 
   .spinner {
     width: 18px; height: 18px;
-    border: 2px solid rgba(10, 15, 40, 0.3);
-    border-top-color: #0a0f28;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-top-color: #ffffff;
     border-radius: 50%;
     animation: spin 0.7s linear infinite;
   }
@@ -298,8 +304,8 @@
     height: 60px;
     padding: 0 20px;
     display: flex; align-items: center; justify-content: space-between;
-    background: linear-gradient(180deg, #0a0f3d 0%, #050b2e 100%);
-    border-bottom: 1px solid rgba(255,255,255,0.05);
+    background: linear-gradient(180deg, #141414 0%, #0a0a0a 100%);
+    border-bottom: 1px solid rgba(255, 107, 26, 0.12);
   }
 
   .header-logos { display: flex; align-items: center; gap: 16px; }
@@ -352,7 +358,7 @@
   .iframe-loader.hidden { opacity: 0; pointer-events: none; }
   .iframe-loader .spinner-lg {
     width: 36px; height: 36px;
-    border: 3px solid rgba(147, 165, 252, 0.2);
+    border: 3px solid rgba(255, 107, 26, 0.2);
     border-top-color: var(--accent-1);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
@@ -381,7 +387,7 @@
       <!-- logos inyectados por JS -->
     </div>
 
-    <div class="wave">👋</div>
+    <div class="wave"><span class="hand">👋</span></div>
     <h1 class="greeting">Hola</h1>
     <p class="login-subtitle">
       Ingresa la clave para visualizar el <b id="login-dashboard-name">Dashboard</b>.
@@ -425,8 +431,8 @@
     <div class="phone-icon">
       <svg viewBox="0 0 200 200" fill="none">
         <!-- arco de rotación punteado -->
-        <path d="M 50 70 A 50 50 0 1 1 145 50" stroke="#93a5fc" stroke-width="2" stroke-dasharray="4 4" fill="none" stroke-linecap="round"/>
-        <path d="M 145 50 L 138 42 M 145 50 L 138 58" stroke="#93a5fc" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M 50 70 A 50 50 0 1 1 145 50" stroke="#ff6b1a" stroke-width="2" stroke-dasharray="4 4" fill="none" stroke-linecap="round"/>
+        <path d="M 145 50 L 138 42 M 145 50 L 138 58" stroke="#ff6b1a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
         <!-- teléfono inclinado -->
         <g transform="rotate(-25 100 110)">
           <rect x="60" y="65" width="80" height="90" rx="10" ry="10" stroke="rgba(255,255,255,0.85)" stroke-width="2.5" fill="none"/>
@@ -497,33 +503,30 @@
 ================================================================ */
 const CONFIG = {
   // Nombre que aparece en login y title
-  clientName: "Cliente",
-  dashboardLabel: "Dashboard Cliente",
+  clientName: "WIN",
+  dashboardLabel: "Dashboard WIN",
 
   // URL del Power BI publicada (Publish to web)
-  // Tu link va aquí. Recomendado agregar parámetros para esconder UI:
+  // Recomendado agregar parámetros para esconder UI:
   //   &chromeless=1   (oculta barras nativas de Power BI)
   //   &filterPaneEnabled=false
   //   &navContentPaneEnabled=false
   dashboardUrl: "https://app.powerbi.com/view?r=eyJrIjoiMmUwYzhmYjMtMWU0Zi00ZDFhLWFiZmEtN2VlOTFlN2VlZjM4IiwidCI6ImRlMmJkZGZmLWZkMGItNDRjYS04ZmYwLTYyNjEwY2Y0ZWUzNiIsImMiOjR9&chromeless=1",
 
-  // Hash SHA-256 de la contraseña
-  // Cómo generar: en consola del navegador corre:
-  //   crypto.subtle.digest('SHA-256', new TextEncoder().encode('TU_PASSWORD'))
-  //     .then(b => console.log([...new Uint8Array(b)].map(x => x.toString(16).padStart(2,'0')).join('')))
-  // Default: hash de "demo123"
-  passwordHash: "d3ad9315b7be5dd53b31a273b3b3aba5defe700808305aa16a3062b76658a791",
+  // Hash de la contraseña, inyectado en build (Netlify env DASHBOARD_PASSWORD_HASH)
+  // Formato preferido: pbkdf2$<iter>$<saltHex>$<hashHex> (PBKDF2-SHA-256)
+  // También acepta el formato legacy: 64 chars hex (SHA-256 plano)
+  passwordHash: "__DASHBOARD_PASSWORD_HASH__",
 
-  // Logos: pueden ser URLs externas o paths locales (ej. "logo-cliente.svg")
-  // Si solo quieres uno, pon clientLogo y deja agencyLogo en null
-  clientLogo: null,    // ej: "logo-upn.svg"
-  agencyLogo: null,    // ej: "logo-reset.svg"
+  // Logos sobre fondo oscuro: WIN en blanco y Reset en blanco
+  clientLogo: "win-white.png",
+  agencyLogo: "reset-blanco.png",
 
   // Texto del footer
-  footerText: "© 2026 · Reset",
+  footerText: "© 2026 WIN · Reset",
 
   // Clave para localStorage (cámbiala si tienes varias instancias)
-  storageKey: "dashboard_session_v1"
+  storageKey: "win_dashboard_v1"
 };
 
 /* ================================================================
@@ -550,11 +553,45 @@ function buildLogos(target) {
 buildLogos(document.getElementById("login-logos"));
 buildLogos(document.getElementById("header-logos-target"));
 
-// SHA-256 helper
-async function sha256(text) {
+// Helpers de hashing
+async function sha256Hex(text) {
   const buf = new TextEncoder().encode(text);
   const hash = await crypto.subtle.digest("SHA-256", buf);
   return [...new Uint8Array(hash)].map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+function hexToBytes(hex) {
+  const out = new Uint8Array(hex.length / 2);
+  for (let i = 0; i < out.length; i++) out[i] = parseInt(hex.substr(i * 2, 2), 16);
+  return out;
+}
+
+// Verifica la password contra el hash almacenado.
+// Soporta dos formatos: pbkdf2$<iter>$<saltHex>$<hashHex> y 64-char hex SHA-256 (legacy).
+async function verifyPassword(password, stored) {
+  if (!stored || stored.indexOf("__") === 0) return false; // placeholder no sustituido
+  if (stored.startsWith("pbkdf2$")) {
+    const parts = stored.split("$");
+    if (parts.length !== 4) return false;
+    const iterations = parseInt(parts[1], 10);
+    const salt = hexToBytes(parts[2]);
+    const expectedHex = parts[3];
+    const keyMaterial = await crypto.subtle.importKey(
+      "raw",
+      new TextEncoder().encode(password),
+      { name: "PBKDF2" }, false, ["deriveBits"]
+    );
+    const derivedBits = await crypto.subtle.deriveBits(
+      { name: "PBKDF2", salt, iterations, hash: "SHA-256" },
+      keyMaterial,
+      expectedHex.length * 4
+    );
+    const derivedHex = [...new Uint8Array(derivedBits)].map(b => b.toString(16).padStart(2, "0")).join("");
+    return derivedHex === expectedHex;
+  }
+  // legacy: SHA-256 hex
+  const hex = await sha256Hex(password);
+  return hex === stored;
 }
 
 // Pantallas
@@ -614,13 +651,15 @@ async function handleLogin() {
   // pequeño delay artificial para que se sienta intencional
   await new Promise(r => setTimeout(r, 350));
 
-  const hash = await sha256(value);
+  const ok = await verifyPassword(value, CONFIG.passwordHash);
 
-  if (hash === CONFIG.passwordHash) {
+  if (ok) {
+    // El token guardado es el hash configurado. Si el deploy cambia el hash,
+    // las sesiones recordadas se invalidan automáticamente.
     if (rememberCheck.checked) {
-      localStorage.setItem(CONFIG.storageKey, hash);
+      localStorage.setItem(CONFIG.storageKey, CONFIG.passwordHash);
     } else {
-      sessionStorage.setItem(CONFIG.storageKey, hash);
+      sessionStorage.setItem(CONFIG.storageKey, CONFIG.passwordHash);
     }
     submitLabel.textContent = "✓";
     setTimeout(showApp, 200);
@@ -724,6 +763,20 @@ portraitMQ.addEventListener("change", () => {
   rotateDismissed = false; // reset cuando cambia orientación
   checkOrientation();
 });
+
+// ============================================
+// WAVE: re-disparar al pasar el mouse por la tarjeta
+// ============================================
+(function() {
+  const card = document.querySelector(".login-card");
+  const hand = document.querySelector(".wave .hand");
+  if (!card || !hand) return;
+  card.addEventListener("mouseenter", () => {
+    hand.style.animation = "none";
+    void hand.offsetWidth; // reflow para reiniciar la animación
+    hand.style.animation = "";
+  });
+})();
 
 // ============================================
 // PWA: SERVICE WORKER
