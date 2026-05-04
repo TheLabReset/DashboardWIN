@@ -847,6 +847,8 @@ function showLogin() {
   appScreen.classList.remove("active");
   rotateScreen.classList.remove("active");
   isLoggedIn = false;
+  // Bloquea zoom mientras estamos en login (anti auto-zoom al rotar)
+  setViewportLock(true);
   // Re-evalúa orientation: mobile landscape sin login pide girar a vertical.
   checkOrientation();
 }
@@ -855,6 +857,8 @@ function showApp() {
   loginScreen.style.display = "none";
   appScreen.classList.add("active");
   isLoggedIn = true;
+  // En el dashboard liberamos el viewport para permitir pinch-zoom
+  setViewportLock(false);
   // Carga el iframe solo cuando logueado para no descargar el Power BI antes
   if (!iframe.src || iframe.src === "about:blank") {
     loadDashboard();
@@ -1156,11 +1160,24 @@ landscapeMQ.addEventListener("change", checkOrientation);
 checkOrientation();
 
 // ============================================
-// BLOQUEAR PINCH-ZOOM EN LOGIN (iOS Safari y PWA)
+// BLOQUEAR PINCH-ZOOM Y AUTO-ZOOM EN LOGIN
 // ============================================
 // El doble-tap-zoom lo cubre touch-action: manipulation en CSS (#login-screen).
-// Para el pinch-zoom en iOS Safari (que ignora touch-action) interceptamos los
-// gestos propietarios de WebKit, solo mientras el login está visible.
+// El pinch-zoom en iOS Safari se intercepta vía gesturestart preventDefault.
+// Y para el auto-zoom que iOS aplica al rotar la pantalla, mutamos el meta
+// viewport con maximum-scale=1.0 mientras el login está visible. En el
+// dashboard liberamos el viewport para que el usuario pueda hacer pinch.
+const viewportMeta = document.querySelector('meta[name="viewport"]');
+const VIEWPORT_FREE = "width=device-width, initial-scale=1.0, viewport-fit=cover";
+const VIEWPORT_LOCKED = "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover";
+function setViewportLock(locked) {
+  if (!viewportMeta) return;
+  viewportMeta.setAttribute("content", locked ? VIEWPORT_LOCKED : VIEWPORT_FREE);
+}
+// Al cargar la app, si el login está visible (display: flex por default),
+// arrancamos con el viewport lockeado para evitar zoom hasta que se loguee.
+setViewportLock(true);
+
 function loginVisible() {
   return loginScreen.style.display !== "none";
 }
