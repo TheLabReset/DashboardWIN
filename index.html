@@ -280,25 +280,57 @@
     align-items: center; justify-content: center;
     padding: 24px;
     z-index: 20;
+    background: rgba(10, 10, 10, 0.6);
+    backdrop-filter: blur(24px) saturate(120%);
+    -webkit-backdrop-filter: blur(24px) saturate(120%);
   }
   #rotate-screen.active { display: flex; }
 
   .rotate-card {
     width: 100%; max-width: 420px;
-    padding: 40px 28px;
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
+    padding: 36px 28px 28px;
+    background: rgba(22, 16, 12, 0.92);
+    border: 1px solid rgba(255, 107, 26, 0.22);
     border-radius: 24px;
-    backdrop-filter: blur(20px);
     text-align: center;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.02) inset;
   }
 
   .phone-icon {
-    width: 120px; height: 120px;
-    margin: 0 auto 24px;
-    color: rgba(255, 255, 255, 0.85);
+    width: 132px; height: 132px;
+    margin: 0 auto 20px;
+    color: rgba(255, 255, 255, 0.9);
   }
-  .phone-icon svg { width: 100%; height: 100%; }
+  .phone-icon svg { width: 100%; height: 100%; overflow: visible; }
+
+  /* Mostrar solo el SVG de la variante activa */
+  .phone-icon .icon-ios { display: none; }
+  .rotate-card.is-ios .phone-icon .icon-rotate { display: none; }
+  .rotate-card.is-ios .phone-icon .icon-ios { display: block; }
+
+  /* Variante "rotar": el teléfono gira 0deg -> -90deg y vuelve, en loop suave */
+  .phone-icon .phone-rotate { transform-origin: 100px 100px; animation: phoneRotate 2.6s cubic-bezier(.65, 0, .35, 1) infinite; }
+  .phone-icon .arc { animation: arcFlash 2.6s linear infinite; }
+  @keyframes phoneRotate {
+    0%, 18%   { transform: rotate(0deg); }
+    42%, 68%  { transform: rotate(-90deg); }
+    92%, 100% { transform: rotate(0deg); }
+  }
+  @keyframes arcFlash {
+    0%, 18%   { opacity: 0.25; }
+    24%, 36%  { opacity: 1; }
+    50%, 100% { opacity: 0.25; }
+  }
+
+  /* Variante iOS: el icono share pulsa para llamar la atención */
+  .phone-icon .share-pulse {
+    transform-origin: 100px 88px;
+    animation: sharePulse 1.6s ease-in-out infinite;
+  }
+  @keyframes sharePulse {
+    0%, 100% { transform: translateY(0); opacity: 0.7; }
+    50%      { transform: translateY(-4px); opacity: 1; }
+  }
 
   .rotate-card h2 {
     font-size: 24px; font-weight: 700;
@@ -536,16 +568,26 @@
 ============================================ -->
 <div id="rotate-screen">
   <div class="rotate-card">
-    <div class="phone-icon">
-      <svg viewBox="0 0 200 200" fill="none">
-        <!-- arco de rotación punteado -->
-        <path d="M 50 70 A 50 50 0 1 1 145 50" stroke="#ff6b1a" stroke-width="2" stroke-dasharray="4 4" fill="none" stroke-linecap="round"/>
-        <path d="M 145 50 L 138 42 M 145 50 L 138 58" stroke="#ff6b1a" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-        <!-- teléfono inclinado -->
-        <g transform="rotate(-25 100 110)">
-          <rect x="60" y="65" width="80" height="90" rx="10" ry="10" stroke="rgba(255,255,255,0.85)" stroke-width="2.5" fill="none"/>
-          <rect x="68" y="75" width="64" height="64" rx="2" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" fill="none"/>
-          <circle cx="125" cy="148" r="2" fill="rgba(255,255,255,0.85)"/>
+    <div class="phone-icon" aria-hidden="true">
+      <svg class="icon-rotate" viewBox="0 0 200 200" fill="none">
+        <g class="arc">
+          <path d="M 60 72 Q 60 30, 100 30 Q 140 30, 140 72" stroke="#ff6b1a" stroke-width="3" stroke-dasharray="4 5" fill="none" stroke-linecap="round"/>
+          <path d="M 140 72 L 132 62 M 140 72 L 148 62" stroke="#ff6b1a" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+        <g class="phone-rotate">
+          <rect x="80" y="58" width="40" height="90" rx="7" stroke="currentColor" stroke-width="3" fill="none"/>
+          <line x1="92" y1="140" x2="108" y2="140" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="100" cy="68" r="2" fill="currentColor"/>
+        </g>
+      </svg>
+      <svg class="icon-ios" viewBox="0 0 200 200" fill="none">
+        <rect x="62" y="32" width="76" height="142" rx="14" stroke="currentColor" stroke-width="3" fill="none"/>
+        <rect x="86" y="40" width="28" height="4" rx="2" fill="currentColor" opacity="0.6"/>
+        <line x1="92" y1="166" x2="108" y2="166" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
+        <g class="share-pulse">
+          <rect x="86" y="92" width="28" height="38" rx="4" stroke="#ff6b1a" stroke-width="2.5" fill="none"/>
+          <line x1="100" y1="110" x2="100" y2="76" stroke="#ff6b1a" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M 90 86 L 100 76 L 110 86" stroke="#ff6b1a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
         </g>
       </svg>
     </div>
@@ -949,14 +991,17 @@ function isStandalone() {
 // En iOS sin instalar, el fullscreen API no funciona, así que el camino útil
 // es instalar la app a la pantalla de inicio.
 function applyRotatePromptVariant() {
-  const h2 = document.querySelector(".rotate-card h2");
-  const p = document.querySelector(".rotate-card p");
+  const card = document.querySelector(".rotate-card");
+  const h2 = card.querySelector("h2");
+  const p = card.querySelector("p");
   const fsBtn = document.getElementById("fullscreen-btn");
   if (isIOS() && !isStandalone()) {
+    card.classList.add("is-ios");
     h2.textContent = "Instala la app";
     p.innerHTML = 'Para una mejor experiencia, toca <b>Compartir</b> y luego <b>Añadir a pantalla de inicio</b>. Después abre el dashboard desde el ícono.';
     fsBtn.style.display = "none";
   } else {
+    card.classList.remove("is-ios");
     h2.textContent = "Gira tu dispositivo";
     p.innerHTML = 'Este dashboard luce mejor en <b>horizontal</b>.<br>Actívalo en pantalla completa para una experiencia óptima.';
     fsBtn.style.display = "";
@@ -1021,6 +1066,16 @@ if ("serviceWorker" in navigator) {
             showUpdatePrompt(newWorker);
           }
         });
+      });
+
+      // Re-chequear updates al volver a foco y cada hora, así la PWA detecta
+      // versiones nuevas sin necesidad de cerrar y abrir manualmente.
+      const checkForUpdate = () => reg.update().catch(() => {});
+      const HOUR = 60 * 60 * 1000;
+      setInterval(checkForUpdate, HOUR);
+      window.addEventListener("focus", checkForUpdate);
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) checkForUpdate();
       });
     }).catch(err => console.warn("SW registration failed:", err));
 

@@ -1,11 +1,17 @@
 // ============================================
 // Service Worker · Dashboard Wrapper
-// Estrategia: cache-first para el shell (HTML/CSS/JS/icons),
-// network-only para el iframe de Power BI (no se cachea, siempre datos frescos).
-// Sube el CACHE_NAME cuando hagas cambios al index.html.
+// Estrategia:
+//   - Network-first para HTML (./, ./index.html, navegaciones): siempre
+//     intenta traer la versión fresca; cache solo como fallback offline.
+//     Esto evita el problema de quedar pegado en una versión vieja sin
+//     borrar cache ni reinstalar la PWA.
+//   - Cache-first para assets estáticos del shell (iconos, manifest, logos):
+//     se actualizan al bumpear CACHE_NAME.
+//   - Network-only para todo lo de otros orígenes (Power BI, etc.).
+// Sube el CACHE_NAME cuando cambien assets cacheados.
 // ============================================
 
-const CACHE_NAME = "dashboard-wrapper-v3";
+const CACHE_NAME = "dashboard-wrapper-v4";
 const SHELL_ASSETS = [
   "./",
   "./index.html",
@@ -42,35 +48,47 @@ self.addEventListener("activate", event => {
   );
 });
 
-// Fetch: cache-first para shell, network-only para todo lo demás (Power BI, etc.)
+// Fetch: network-first para HTML, cache-first para assets, network-only para externos.
 self.addEventListener("fetch", event => {
   const url = new URL(event.request.url);
 
-  // Solo manejamos requests del mismo origen para el shell.
-  // Power BI y cualquier API externa van directo a la red.
-  if (url.origin !== self.location.origin) {
-    return; // deja que el browser maneje el request normal
-  }
-
-  // GET only
+  // Cross-origin (Power BI, etc.) va directo a la red.
+  if (url.origin !== self.location.origin) return;
   if (event.request.method !== "GET") return;
 
-  event.respondWith(
-    caches.match(event.request).then(cached => {
-      if (cached) return cached;
-      return fetch(event.request).then(response => {
-        // Opcional: cachear respuestas exitosas del propio origen
+  const isHTML =
+    event.request.mode === "navigate" ||
+    url.pathname === "/" ||
+    url.pathname.endsWith("/") ||
+    url.pathname.endsWith("/index.html");
+
+  if (isHTML) {
+    // Network-first para HTML: siempre intenta red, fallback al cache.
+    event.respondWith(
+      fetch(event.request).then(response => {
         if (response.ok && response.type === "basic") {
           const copy = response.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
         }
         return response;
-      }).catch(() => {
-        // Fallback: solo para navegación HTML, no para imágenes ni JSON.
-        // Evita servir el HTML como respuesta a un .png que falló.
-        if (event.request.mode === "navigate") return caches.match("./index.html");
-        return new Response("", { status: 504, statusText: "Offline" });
-      });
+      }).catch(() =>
+        caches.match(event.request).then(cached => cached || caches.match("./index.html"))
+      )
+    );
+    return;
+  }
+
+  // Cache-first para assets estáticos.
+  event.respondWith(
+    caches.match(event.request).then(cached => {
+      if (cached) return cached;
+      return fetch(event.request).then(response => {
+        if (response.ok && response.type === "basic") {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
+        }
+        return response;
+      }).catch(() => new Response("", { status: 504, statusText: "Offline" }));
     })
   );
 });
