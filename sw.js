@@ -5,7 +5,7 @@
 // Sube el CACHE_NAME cuando hagas cambios al index.html.
 // ============================================
 
-const CACHE_NAME = "dashboard-wrapper-v2";
+const CACHE_NAME = "dashboard-wrapper-v3";
 const SHELL_ASSETS = [
   "./",
   "./index.html",
@@ -16,13 +16,21 @@ const SHELL_ASSETS = [
   "./reset-blanco.png"
 ];
 
-// Install: precachea el shell
+// Install: precachea el shell.
+// Importante: NO llamamos skipWaiting() automáticamente. Esperamos a que el
+// cliente avise (mediante postMessage SKIP_WAITING) que ya mostró el banner
+// y el usuario aceptó actualizar. Así evitamos cortar la sesión activa.
 self.addEventListener("install", event => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(cache => cache.addAll(SHELL_ASSETS))
-      .then(() => self.skipWaiting())
+    caches.open(CACHE_NAME).then(cache => cache.addAll(SHELL_ASSETS))
   );
+});
+
+// El cliente envía este mensaje cuando el usuario aprueba la actualización.
+self.addEventListener("message", event => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });
 
 // Activate: limpia caches viejos
@@ -57,7 +65,12 @@ self.addEventListener("fetch", event => {
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, copy));
         }
         return response;
-      }).catch(() => caches.match("./index.html"));
+      }).catch(() => {
+        // Fallback: solo para navegación HTML, no para imágenes ni JSON.
+        // Evita servir el HTML como respuesta a un .png que falló.
+        if (event.request.mode === "navigate") return caches.match("./index.html");
+        return new Response("", { status: 504, statusText: "Offline" });
+      });
     })
   );
 });
