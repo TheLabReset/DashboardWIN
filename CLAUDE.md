@@ -35,24 +35,26 @@ PWA estática de un solo archivo (`index.html`) que envuelve un iframe a un Powe
 | Sección | Líneas |
 |---|---|
 | Meta tags y links (manifest, icons, theme-color) | 1-13 |
-| CSS variables `:root` (paleta WIN dark-naranja) | 15-33 |
-| Reset y body con gradients de fondo | 35-50 |
-| CSS login screen (card, wave, input, submit, footer) | 53-232 |
-| CSS rotation prompt | 234-289 |
-| CSS app screen (header, icon-btn, iframe-wrap, loader) | 291-376 |
-| HTML login screen | 381-424 |
-| HTML rotation prompt | 426-457 |
-| HTML app screen (header + iframe) | 459-498 |
-| `<script>`: objeto `CONFIG` (con placeholder de hash) | 504-528 |
-| Setea textos dinámicos e inyecta logos | 535-554 |
-| Helpers de hashing (`sha256Hex`, `hexToBytes`, `verifyPassword`) | 557-595 |
-| Refs a pantallas y `showLogin`/`showApp` | 598-625 |
-| Lógica de login (handleLogin, eye toggle, autologin) | 627-690 |
-| Logout, refresh, fullscreen API | 692-730 |
-| Botón fullscreen del rotate prompt y dismiss | 732-745 |
-| Detección de orientation portrait + media query | 747-765 |
-| Wave: re-disparar al hover de la card | 767-779 |
-| Registro del service worker | 781-789 |
+| CSS variables `:root` (paleta WIN dark-naranja) | 18-34 |
+| `.sr-only` (accesibilidad) y focus rings de botones | 38-49 |
+| Reset y body con gradients de fondo | 50-65 |
+| CSS login screen (card, wave, input, submit, footer) | 66-272 |
+| CSS rotation prompt | 274-329 |
+| CSS app screen (header, icon-btn, iframe-wrap, loader) | 331-443 |
+| CSS update banner (PWA update) | 445-475 |
+| HTML login screen | 487-533 |
+| HTML rotation prompt | 537-565 |
+| HTML app screen (header + iframe + error overlay) | 570-622 |
+| HTML banner de nueva versión | 625-628 |
+| `<script>`: objeto `CONFIG` (con placeholder de hash) | 636-662 |
+| Helpers de hashing (`sha256Hex`, `hexToBytes`, `verifyPassword`) | 689-730 |
+| Pantallas, estado y `loadDashboard` con watchdog | 740-795 |
+| Lógica de login (handleLogin, eye toggle, autologin) | 797-865 |
+| Logout, refresh, fullscreen API + sync icon | 869-930 |
+| Botón fullscreen del rotate prompt y dismiss | 933-945 |
+| Detección iOS / standalone y variant del rotate prompt | 939-985 |
+| Wave: re-disparar al hover de la card | 985-1008 |
+| Registro del service worker + auto-update prompt | 995-1030 |
 
 > Las líneas son aproximadas y se desplazan al editar. Usar `grep -n` para anclajes exactos.
 

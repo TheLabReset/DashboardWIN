@@ -34,6 +34,19 @@
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
+  /* Solo para lectores de pantalla, fuera del flujo visual */
+  .sr-only {
+    position: absolute; width: 1px; height: 1px;
+    padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+  }
+
+  /* Focus ring consistente para todos los botones interactivos */
+  button:focus-visible {
+    outline: 2px solid var(--accent-1);
+    outline-offset: 2px;
+  }
+
   html, body {
     height: 100%;
     overflow: hidden;
@@ -173,13 +186,22 @@
     cursor: pointer;
     user-select: none;
   }
-  .remember-row input { display: none; }
+  .remember-row input {
+    position: absolute;
+    width: 1px; height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
   .checkbox {
     width: 18px; height: 18px;
     border: 1.5px solid rgba(255, 107, 26, 0.45);
     border-radius: 5px;
     display: flex; align-items: center; justify-content: center;
     transition: all 0.2s;
+  }
+  .remember-row input:focus-visible + .checkbox {
+    outline: 2px solid var(--accent-1);
+    outline-offset: 2px;
   }
   .remember-row input:checked + .checkbox {
     background: var(--accent-1);
@@ -209,8 +231,20 @@
     cursor: pointer;
     box-shadow: 0 0 40px var(--accent-glow);
     transition: transform 0.15s, box-shadow 0.2s;
+    position: relative;
+    min-height: 52px;
+  }
+  .submit-content {
     display: flex; align-items: center; justify-content: center; gap: 8px;
   }
+  .submit-spinner {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    display: none;
+  }
+  .submit-btn.is-loading .submit-content { visibility: hidden; }
+  .submit-btn.is-loading .submit-spinner { display: block; }
   .submit-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 50px var(--accent-glow); }
   .submit-btn:active { transform: translateY(0); }
   .submit-btn:disabled { opacity: 0.6; cursor: wait; }
@@ -229,6 +263,12 @@
     font-size: 12px;
     color: var(--text-dim);
     margin-top: 24px;
+    letter-spacing: 0.04em;
+  }
+  .footer-text b {
+    color: var(--text);
+    font-weight: 900;
+    letter-spacing: 0.12em;
   }
 
   /* ============================================
@@ -332,6 +372,12 @@
   }
   .icon-btn svg { width: 18px; height: 18px; }
 
+  /* Toggle de íconos del botón fullscreen según estado del documento */
+  body.is-fullscreen #fs-toggle-btn .icon-fs-enter,
+  body:not(.is-fullscreen) #fs-toggle-btn .icon-fs-exit {
+    display: none;
+  }
+
   .logout-btn { width: auto; padding: 0 16px; gap: 8px; font-size: 14px; font-family: inherit; }
   .logout-btn .label { display: none; }
 
@@ -356,6 +402,32 @@
     transition: opacity 0.4s;
   }
   .iframe-loader.hidden { opacity: 0; pointer-events: none; }
+
+  .iframe-error {
+    position: absolute; inset: 0;
+    display: none;
+    flex-direction: column; align-items: center; justify-content: center;
+    background: var(--bg-1);
+    color: var(--text);
+    text-align: center;
+    padding: 24px; gap: 14px;
+    z-index: 2;
+  }
+  .iframe-error.active { display: flex; }
+  .iframe-error svg { width: 48px; height: 48px; color: var(--accent-1); }
+  .iframe-error h3 { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; }
+  .iframe-error p { font-size: 14px; color: var(--text-dim); max-width: 360px; line-height: 1.5; }
+  .retry-btn {
+    margin-top: 8px;
+    padding: 12px 22px;
+    background: linear-gradient(90deg, var(--accent-1) 0%, var(--accent-2) 100%);
+    border: 0; border-radius: 12px;
+    color: #ffffff;
+    font-size: 14px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+    box-shadow: 0 0 24px var(--accent-glow);
+  }
+  .retry-btn:active { transform: translateY(1px); }
   .iframe-loader .spinner-lg {
     width: 36px; height: 36px;
     border: 3px solid rgba(255, 107, 26, 0.2);
@@ -369,6 +441,37 @@
     border: 0;
     display: block;
   }
+
+  /* ============================================
+     UPDATE BANNER (nueva versión disponible)
+  ============================================ */
+  .update-banner {
+    position: fixed;
+    bottom: 16px; left: 50%;
+    transform: translateX(-50%) translateY(180%);
+    background: #161616;
+    border: 1px solid rgba(255, 107, 26, 0.3);
+    border-radius: 12px;
+    padding: 12px 14px 12px 16px;
+    display: flex; align-items: center; gap: 14px;
+    font-size: 14px;
+    color: var(--text);
+    z-index: 100;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    transition: transform 0.4s cubic-bezier(.4, 0, .2, 1);
+    max-width: calc(100% - 32px);
+  }
+  .update-banner.active { transform: translateX(-50%) translateY(0); }
+  .update-btn {
+    padding: 8px 14px;
+    background: var(--accent-1);
+    border: 0; border-radius: 8px;
+    color: #ffffff;
+    font-size: 13px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+    transition: background 0.15s;
+  }
+  .update-btn:hover { background: var(--accent-2); }
 
   /* Hide rotate prompt on desktop or landscape */
   @media (min-width: 900px), (orientation: landscape) {
@@ -399,14 +502,16 @@
         <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
         <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
       </svg>
-      <input type="password" id="password-input" placeholder="Escribe tu clave" autocomplete="current-password">
-      <button type="button" class="eye-btn" id="toggle-eye" aria-label="Mostrar/ocultar clave">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <input type="password" id="password-input" placeholder="Escribe tu clave" autocomplete="current-password" aria-describedby="login-error-live">
+      <button type="button" class="eye-btn" id="toggle-eye" aria-label="Mostrar clave" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
           <circle cx="12" cy="12" r="3"></circle>
         </svg>
       </button>
     </div>
+
+    <div class="sr-only" id="login-error-live" role="alert" aria-live="polite"></div>
 
     <label class="remember-row">
       <input type="checkbox" id="remember-check">
@@ -414,9 +519,12 @@
       <span>Recordar contraseña</span>
     </label>
 
-    <button class="submit-btn" id="submit-btn">
-      <span id="submit-label">Entrar</span>
-      <span id="submit-arrow">→</span>
+    <button class="submit-btn" id="submit-btn" type="button">
+      <span class="submit-content">
+        <span id="submit-label">Entrar</span>
+        <span id="submit-arrow" aria-hidden="true">→</span>
+      </span>
+      <span class="submit-spinner spinner" aria-hidden="true"></span>
     </button>
 
     <div class="footer-text" id="footer-credit">© 2026</div>
@@ -470,11 +578,17 @@
         </svg>
       </button>
       <button class="icon-btn" id="fs-toggle-btn" title="Pantalla completa" aria-label="Pantalla completa">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="icon-fs-enter" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M8 3H5a2 2 0 0 0-2 2v3"/>
           <path d="M21 8V5a2 2 0 0 0-2-2h-3"/>
           <path d="M3 16v3a2 2 0 0 0 2 2h3"/>
           <path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
+        </svg>
+        <svg class="icon-fs-exit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M8 3v3a2 2 0 0 1-2 2H3"/>
+          <path d="M21 8h-3a2 2 0 0 1-2-2V3"/>
+          <path d="M3 16h3a2 2 0 0 1 2 2v3"/>
+          <path d="M16 21v-3a2 2 0 0 1 2-2h3"/>
         </svg>
       </button>
       <button class="icon-btn logout-btn" id="logout-btn" title="Cerrar sesión">
@@ -493,8 +607,26 @@
       <div class="spinner-lg"></div>
       <div>Cargando dashboard...</div>
     </div>
+    <div class="iframe-error" id="iframe-error" role="alert">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+        <line x1="12" y1="9" x2="12" y2="13"></line>
+        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+      </svg>
+      <h3>No pudimos cargar el dashboard</h3>
+      <p id="iframe-error-detail">Verifica tu conexión a internet y vuelve a intentarlo.</p>
+      <button class="retry-btn" id="retry-btn" type="button">Reintentar</button>
+    </div>
     <iframe id="dashboard-iframe" allowfullscreen frameborder="0"></iframe>
   </div>
+</div>
+
+<!-- ============================================
+     BANNER DE NUEVA VERSIÓN (PWA update)
+============================================ -->
+<div class="update-banner" id="update-banner" role="status" aria-live="polite">
+  <span>Hay una versión nueva disponible.</span>
+  <button class="update-btn" id="update-btn" type="button">Actualizar</button>
 </div>
 
 <script>
@@ -522,8 +654,8 @@ const CONFIG = {
   clientLogo: "win-white.png",
   agencyLogo: "reset-blanco.png",
 
-  // Texto del footer
-  footerText: "© 2026 WIN · Reset",
+  // Texto del footer (acepta HTML, usar con cuidado)
+  footerText: 'Powered by <b>THE LAB</b>',
 
   // Clave para localStorage (cámbiala si tienes varias instancias)
   storageKey: "win_dashboard_v1"
@@ -536,7 +668,7 @@ const CONFIG = {
 // Setea textos dinámicos
 document.title = CONFIG.dashboardLabel + " · Acceso";
 document.getElementById("login-dashboard-name").textContent = CONFIG.dashboardLabel;
-document.getElementById("footer-credit").textContent = CONFIG.footerText;
+document.getElementById("footer-credit").innerHTML = CONFIG.footerText;
 
 // Inyecta logos
 function buildLogos(target) {
@@ -600,9 +732,13 @@ const rotateScreen = document.getElementById("rotate-screen");
 const appScreen = document.getElementById("app-screen");
 const iframe = document.getElementById("dashboard-iframe");
 const loader = document.getElementById("iframe-loader");
+const errorOverlay = document.getElementById("iframe-error");
+const errorDetail = document.getElementById("iframe-error-detail");
 
 // Estado
 let isLoggedIn = false;
+let loadWatchdog = null;
+const LOAD_TIMEOUT_MS = 20000;
 
 function showLogin() {
   loginScreen.style.display = "flex";
@@ -614,15 +750,47 @@ function showApp() {
   loginScreen.style.display = "none";
   appScreen.classList.add("active");
   isLoggedIn = true;
-  // carga el iframe solo cuando logueado para no descargar el Power BI antes
-  if (!iframe.src) {
-    iframe.src = CONFIG.dashboardUrl;
-    iframe.addEventListener("load", () => loader.classList.add("hidden"), { once: true });
-    // fallback por si el evento no dispara
-    setTimeout(() => loader.classList.add("hidden"), 8000);
+  // Carga el iframe solo cuando logueado para no descargar el Power BI antes
+  if (!iframe.src || iframe.src === "about:blank") {
+    loadDashboard();
   }
   checkOrientation();
 }
+
+function loadDashboard() {
+  errorOverlay.classList.remove("active");
+  loader.classList.remove("hidden");
+  iframe.src = CONFIG.dashboardUrl;
+  clearTimeout(loadWatchdog);
+  loadWatchdog = setTimeout(() => {
+    showIframeError(navigator.onLine
+      ? "El dashboard tardó demasiado en responder. Reintenta en unos segundos."
+      : "Parece que no hay internet. Conéctate y vuelve a intentar.");
+  }, LOAD_TIMEOUT_MS);
+}
+
+function showIframeError(detail) {
+  if (detail) errorDetail.textContent = detail;
+  loader.classList.add("hidden");
+  errorOverlay.classList.add("active");
+}
+
+iframe.addEventListener("load", () => {
+  // Filtra el about:blank inicial (algunos navegadores disparan load igual)
+  if (!iframe.src || iframe.src === "about:blank") return;
+  clearTimeout(loadWatchdog);
+  loader.classList.add("hidden");
+  errorOverlay.classList.remove("active");
+});
+
+document.getElementById("retry-btn").addEventListener("click", loadDashboard);
+
+window.addEventListener("offline", () => {
+  if (isLoggedIn) showIframeError("Se perdió la conexión a internet.");
+});
+window.addEventListener("online", () => {
+  if (isLoggedIn && errorOverlay.classList.contains("active")) loadDashboard();
+});
 
 // ============================================
 // LOGIN
@@ -635,7 +803,10 @@ const rememberCheck = document.getElementById("remember-check");
 const eyeBtn = document.getElementById("toggle-eye");
 
 eyeBtn.addEventListener("click", () => {
-  passwordInput.type = passwordInput.type === "password" ? "text" : "password";
+  const willShow = passwordInput.type === "password";
+  passwordInput.type = willShow ? "text" : "password";
+  eyeBtn.setAttribute("aria-pressed", String(willShow));
+  eyeBtn.setAttribute("aria-label", willShow ? "Ocultar clave" : "Mostrar clave");
   passwordInput.focus();
 });
 
@@ -643,10 +814,10 @@ async function handleLogin() {
   const value = passwordInput.value.trim();
   if (!value) return;
 
-  // estado loading
+  // estado loading: clase única, sin tocar contenido para evitar saltos
+  submitBtn.classList.add("is-loading");
   submitBtn.disabled = true;
-  submitArrow.style.display = "none";
-  submitLabel.innerHTML = '<span class="spinner"></span>';
+  document.getElementById("login-error-live").textContent = "";
 
   // pequeño delay artificial para que se sienta intencional
   await new Promise(r => setTimeout(r, 350));
@@ -661,18 +832,22 @@ async function handleLogin() {
     } else {
       sessionStorage.setItem(CONFIG.storageKey, CONFIG.passwordHash);
     }
+    submitBtn.classList.remove("is-loading");
     submitLabel.textContent = "✓";
+    submitArrow.style.display = "none";
     setTimeout(showApp, 200);
   } else {
-    // shake + error
+    // shake + error visible y anuncio para lectores de pantalla
     passwordInput.classList.remove("shake");
     void passwordInput.offsetWidth; // reflow
     passwordInput.classList.add("shake");
+    submitBtn.classList.remove("is-loading");
     submitBtn.disabled = false;
     submitLabel.textContent = "Entrar";
     submitArrow.style.display = "inline";
     passwordInput.value = "";
     passwordInput.focus();
+    document.getElementById("login-error-live").textContent = "Clave incorrecta. Vuelve a intentarlo.";
   }
 }
 
@@ -695,8 +870,10 @@ passwordInput.addEventListener("keydown", e => {
 document.getElementById("logout-btn").addEventListener("click", () => {
   localStorage.removeItem(CONFIG.storageKey);
   sessionStorage.removeItem(CONFIG.storageKey);
+  clearTimeout(loadWatchdog);
   iframe.src = "about:blank";
   loader.classList.remove("hidden");
+  errorOverlay.classList.remove("active");
   passwordInput.value = "";
   rememberCheck.checked = false;
   isLoggedIn = false;
@@ -704,10 +881,7 @@ document.getElementById("logout-btn").addEventListener("click", () => {
   exitFullscreen();
 });
 
-document.getElementById("refresh-btn").addEventListener("click", () => {
-  loader.classList.remove("hidden");
-  iframe.src = iframe.src; // forza reload
-});
+document.getElementById("refresh-btn").addEventListener("click", loadDashboard);
 
 function enterFullscreen() {
   const el = document.documentElement;
@@ -724,10 +898,20 @@ function isFullscreen() {
   return !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement);
 }
 
-document.getElementById("fs-toggle-btn").addEventListener("click", () => {
+const fsToggleBtn = document.getElementById("fs-toggle-btn");
+fsToggleBtn.addEventListener("click", () => {
   if (isFullscreen()) exitFullscreen();
   else enterFullscreen();
 });
+
+function syncFullscreenState() {
+  const fs = isFullscreen();
+  document.body.classList.toggle("is-fullscreen", fs);
+  fsToggleBtn.setAttribute("aria-label", fs ? "Salir de pantalla completa" : "Pantalla completa");
+  fsToggleBtn.title = fs ? "Salir de pantalla completa" : "Pantalla completa";
+}
+document.addEventListener("fullscreenchange", syncFullscreenState);
+document.addEventListener("webkitfullscreenchange", syncFullscreenState);
 
 document.getElementById("fullscreen-btn").addEventListener("click", () => {
   enterFullscreen();
@@ -748,7 +932,37 @@ document.getElementById("dismiss-rotate").addEventListener("click", () => {
 // ORIENTATION DETECTION (mobile portrait)
 // ============================================
 let rotateDismissed = false;
-const portraitMQ = window.matchMedia("(orientation: portrait) and (max-width: 900px)");
+// pointer: coarse limita el prompt a dispositivos táctiles, evita ruido
+// en desktop con ventana angosta y en tablets grandes con teclado.
+const portraitMQ = window.matchMedia("(orientation: portrait) and (max-width: 900px) and (pointer: coarse)");
+
+function isIOS() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+         (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+function isStandalone() {
+  return window.matchMedia("(display-mode: standalone)").matches ||
+         window.navigator.standalone === true;
+}
+
+// Ajusta el copy del rotate prompt según la plataforma.
+// En iOS sin instalar, el fullscreen API no funciona, así que el camino útil
+// es instalar la app a la pantalla de inicio.
+function applyRotatePromptVariant() {
+  const h2 = document.querySelector(".rotate-card h2");
+  const p = document.querySelector(".rotate-card p");
+  const fsBtn = document.getElementById("fullscreen-btn");
+  if (isIOS() && !isStandalone()) {
+    h2.textContent = "Instala la app";
+    p.innerHTML = 'Para una mejor experiencia, toca <b>Compartir</b> y luego <b>Añadir a pantalla de inicio</b>. Después abre el dashboard desde el ícono.';
+    fsBtn.style.display = "none";
+  } else {
+    h2.textContent = "Gira tu dispositivo";
+    p.innerHTML = 'Este dashboard luce mejor en <b>horizontal</b>.<br>Actívalo en pantalla completa para una experiencia óptima.';
+    fsBtn.style.display = "";
+  }
+}
+applyRotatePromptVariant();
 
 function checkOrientation() {
   if (!isLoggedIn) return;
@@ -779,12 +993,43 @@ portraitMQ.addEventListener("change", () => {
 })();
 
 // ============================================
-// PWA: SERVICE WORKER
+// PWA: SERVICE WORKER + auto-update prompt
 // ============================================
+function showUpdatePrompt(worker) {
+  const banner = document.getElementById("update-banner");
+  const btn = document.getElementById("update-btn");
+  banner.classList.add("active");
+  btn.addEventListener("click", () => {
+    btn.disabled = true;
+    btn.textContent = "Actualizando...";
+    worker.postMessage({ type: "SKIP_WAITING" });
+  }, { once: true });
+}
+
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./sw.js").catch(err => {
-      console.warn("SW registration failed:", err);
+    navigator.serviceWorker.register("./sw.js").then(reg => {
+      // Si ya hay un SW esperando al registrar, mostramos el prompt directo.
+      if (reg.waiting && navigator.serviceWorker.controller) {
+        showUpdatePrompt(reg.waiting);
+      }
+      reg.addEventListener("updatefound", () => {
+        const newWorker = reg.installing;
+        if (!newWorker) return;
+        newWorker.addEventListener("statechange", () => {
+          if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+            showUpdatePrompt(newWorker);
+          }
+        });
+      });
+    }).catch(err => console.warn("SW registration failed:", err));
+
+    // Cuando el SW nuevo toma control (después de skipWaiting), recargamos.
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (refreshing) return;
+      refreshing = true;
+      window.location.reload();
     });
   });
 }
