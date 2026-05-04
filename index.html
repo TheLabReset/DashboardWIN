@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0a0a2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Dashboard · Reset</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<style>
+  /* ============================================
+     CONFIG VISUAL · CAMBIA AQUÍ COLORES Y TEMA
+  ============================================ */
+  :root {
+    --bg-1: #050b2e;
+    --bg-2: #0d0a3a;
+    --bg-3: #2a1a5a;
+    --card-bg: rgba(20, 25, 60, 0.55);
+    --card-border: rgba(255, 255, 255, 0.08);
+    --text: #e8eaf6;
+    --text-dim: rgba(232, 234, 246, 0.65);
+    --accent-1: #93a5fc;
+    --accent-2: #c4b5fd;
+    --accent-glow: rgba(147, 165, 252, 0.35);
+    --input-bg: rgba(10, 15, 40, 0.5);
+    --input-border: rgba(147, 165, 252, 0.4);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    height: 100%;
+    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    color: var(--text);
+    background: var(--bg-1);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background:
+      radial-gradient(ellipse 80% 60% at 80% 110%, var(--bg-3) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 0% 0%, #1a1f5c 0%, transparent 50%),
+      linear-gradient(180deg, var(--bg-1) 0%, var(--bg-2) 100%);
+  }
+
+  /* ============================================
+     LOGIN SCREEN
+  ============================================ */
+  #login-screen {
+    position: fixed; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    z-index: 10;
+  }
+
+  .login-card {
+    width: 100%; max-width: 460px;
+    padding: 40px 32px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 24px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  }
+
+  .logos-row {
+    display: flex; align-items: center; justify-content: center;
+    gap: 24px; margin-bottom: 24px;
+  }
+  .logos-row img { height: 36px; width: auto; opacity: 0.95; }
+  .logo-divider { width: 1px; height: 32px; background: rgba(255,255,255,0.2); }
+
+  .wave {
+    text-align: center; font-size: 56px; line-height: 1;
+    margin-bottom: 8px;
+    animation: wave 1.6s ease-in-out infinite;
+    transform-origin: 70% 70%;
+  }
+  @keyframes wave {
+    0%, 60%, 100% { transform: rotate(0deg); }
+    10%, 30% { transform: rotate(14deg); }
+    20% { transform: rotate(-8deg); }
+    40% { transform: rotate(14deg); }
+    50% { transform: rotate(-4deg); }
+  }
+
+  .greeting {
+    text-align: center;
+    font-size: 32px; font-weight: 700;
+    margin-bottom: 12px;
+    letter-spacing: -0.02em;
+  }
+
+  .login-subtitle {
+    text-align: center;
+    font-size: 14px;
+    color: var(--text-dim);
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+  .login-subtitle b { color: var(--text); font-weight: 600; }
+
+  .field-label {
+    display: block;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+
+  .input-wrap {
+    position: relative;
+    margin-bottom: 16px;
+  }
+  .input-wrap .lock-icon,
+  .input-wrap .eye-btn {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    color: var(--text-dim);
+    pointer-events: none;
+    width: 18px; height: 18px;
+  }
+  .input-wrap .lock-icon { left: 16px; }
+  .input-wrap .eye-btn {
+    right: 12px;
+    pointer-events: auto;
+    background: none; border: 0;
+    cursor: pointer; padding: 6px;
+    color: var(--text-dim);
+    width: 30px; height: 30px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .input-wrap .eye-btn:hover { color: var(--text); }
+
+  #password-input {
+    width: 100%;
+    padding: 14px 44px 14px 44px;
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 12px;
+    color: var(--text);
+    font-size: 16px;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  #password-input:focus {
+    border-color: var(--accent-1);
+    box-shadow: 0 0 0 4px rgba(147, 165, 252, 0.1);
+  }
+  #password-input.shake { animation: shake 0.4s; }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-8px); border-color: #ff6b6b; }
+    75% { transform: translateX(8px); border-color: #ff6b6b; }
+  }
+
+  .remember-row {
+    display: flex; align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .remember-row input { display: none; }
+  .checkbox {
+    width: 18px; height: 18px;
+    border: 1.5px solid rgba(147, 165, 252, 0.5);
+    border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .remember-row input:checked + .checkbox {
+    background: var(--accent-1);
+    border-color: var(--accent-1);
+  }
+  .remember-row input:checked + .checkbox::after {
+    content: "";
+    width: 10px; height: 6px;
+    border-left: 2px solid #0a0f28;
+    border-bottom: 2px solid #0a0f28;
+    transform: rotate(-45deg) translate(1px, -1px);
+  }
+  .remember-row span:last-child {
+    font-size: 14px;
+    color: var(--text-dim);
+  }
+
+  .submit-btn {
+    width: 100%;
+    padding: 16px;
+    border: 0;
+    border-radius: 14px;
+    background: linear-gradient(90deg, var(--accent-1) 0%, var(--accent-2) 100%);
+    color: #0a0f28;
+    font-size: 16px; font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    box-shadow: 0 0 40px var(--accent-glow);
+    transition: transform 0.15s, box-shadow 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .submit-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 50px var(--accent-glow); }
+  .submit-btn:active { transform: translateY(0); }
+  .submit-btn:disabled { opacity: 0.6; cursor: wait; }
+
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid rgba(10, 15, 40, 0.3);
+    border-top-color: #0a0f28;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .footer-text {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-top: 24px;
+  }
+
+  /* ============================================
+     ROTATION PROMPT (mobile portrait only)
+  ============================================ */
+  #rotate-screen {
+    position: fixed; inset: 0;
+    display: none;
+    align-items: center; justify-content: center;
+    padding: 24px;
+    z-index: 20;
+  }
+  #rotate-screen.active { display: flex; }
+
+  .rotate-card {
+    width: 100%; max-width: 420px;
+    padding: 40px 28px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 24px;
+    backdrop-filter: blur(20px);
+    text-align: center;
+  }
+
+  .phone-icon {
+    width: 120px; height: 120px;
+    margin: 0 auto 24px;
+    color: rgba(255, 255, 255, 0.85);
+  }
+  .phone-icon svg { width: 100%; height: 100%; }
+
+  .rotate-card h2 {
+    font-size: 24px; font-weight: 700;
+    margin-bottom: 12px;
+    letter-spacing: -0.01em;
+  }
+  .rotate-card p {
+    font-size: 14px;
+    color: var(--text-dim);
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+  .rotate-card p b { color: var(--text); font-weight: 600; }
+
+  .rotate-secondary {
+    display: block;
+    margin-top: 20px;
+    background: none; border: 0;
+    color: var(--text-dim);
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-color: rgba(255,255,255,0.15);
+    text-underline-offset: 4px;
+    width: 100%;
+    font-family: inherit;
+  }
+  .rotate-secondary:hover { color: var(--text); }
+
+  /* ============================================
+     APP / DASHBOARD VIEW
+  ============================================ */
+  #app-screen {
+    position: fixed; inset: 0;
+    display: none;
+    flex-direction: column;
+    background: var(--bg-1);
+  }
+  #app-screen.active { display: flex; }
+
+  .app-header {
+    flex: 0 0 auto;
+    height: 60px;
+    padding: 0 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    background: linear-gradient(180deg, #0a0f3d 0%, #050b2e 100%);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .header-logos { display: flex; align-items: center; gap: 16px; }
+  .header-logos img { height: 28px; }
+  .header-logos .logo-divider { height: 24px; }
+
+  .header-actions {
+    display: flex; gap: 8px;
+  }
+
+  .icon-btn {
+    width: 42px; height: 42px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    color: var(--text);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .icon-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+  .icon-btn svg { width: 18px; height: 18px; }
+
+  .logout-btn { width: auto; padding: 0 16px; gap: 8px; font-size: 14px; font-family: inherit; }
+  .logout-btn .label { display: none; }
+
+  @media (min-width: 768px) {
+    .logout-btn .label { display: inline; }
+  }
+
+  .iframe-wrap {
+    flex: 1 1 auto;
+    position: relative;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  .iframe-loader {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background: var(--bg-1);
+    color: var(--text-dim);
+    gap: 16px;
+    z-index: 1;
+    transition: opacity 0.4s;
+  }
+  .iframe-loader.hidden { opacity: 0; pointer-events: none; }
+  .iframe-loader .spinner-lg {
+    width: 36px; height: 36px;
+    border: 3px solid rgba(147, 165, 252, 0.2);
+    border-top-color: var(--accent-1);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  #dashboard-iframe {
+    width: 100%; height: 100%;
+    border: 0;
+    display: block;
+  }
+
+  /* Hide rotate prompt on desktop or landscape */
+  @media (min-width: 900px), (orientation: landscape) {
+    /* still allow it to show via JS for portrait phones in landscape mode that are narrow */
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================
+     SCREEN 1: LOGIN
+============================================ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="logos-row" id="login-logos">
+      <!-- logos inyectados por JS -->
+    </div>
+
+    <div class="wave">👋</div>
+    <h1 class="greeting">Hola</h1>
+    <p class="login-subtitle">
+      Ingresa la clave para visualizar el <b id="login-dashboard-name">Dashboard</b>.
+    </p>
+
+    <label class="field-label" for="password-input">CLAVE DE ACCESO</label>
+    <div class="input-wrap">
+      <svg class="lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+      </svg>
+      <input type="password" id="password-input" placeholder="Escribe tu clave" autocomplete="current-password">
+      <button type="button" class="eye-btn" id="toggle-eye" aria-label="Mostrar/ocultar clave">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+          <circle cx="12" cy="12" r="3"></circle>
+        </svg>
+      </button>
+    </div>
+
+    <label class="remember-row">
+      <input type="checkbox" id="remember-check">
+      <span class="checkbox"></span>
+      <span>Recordar contraseña</span>
+    </label>
+
+    <button class="submit-btn" id="submit-btn">
+      <span id="submit-label">Entrar</span>
+      <span id="submit-arrow">→</span>
+    </button>
+
+    <div class="footer-text" id="footer-credit">© 2026</div>
+  </div>
+</div>
+
+<!-- ============================================
+     SCREEN 2: ROTATE DEVICE PROMPT
+============================================ -->
+<div id="rotate-screen">
+  <div class="rotate-card">
+    <div class="phone-icon">
+      <svg viewBox="0 0 200 200" fill="none">
+        <!-- arco de rotación punteado -->
+        <path d="M 50 70 A 50 50 0 1 1 145 50" stroke="#93a5fc" stroke-width="2" stroke-dasharray="4 4" fill="none" stroke-linecap="round"/>
+        <path d="M 145 50 L 138 42 M 145 50 L 138 58" stroke="#93a5fc" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        <!-- teléfono inclinado -->
+        <g transform="rotate(-25 100 110)">
+          <rect x="60" y="65" width="80" height="90" rx="10" ry="10" stroke="rgba(255,255,255,0.85)" stroke-width="2.5" fill="none"/>
+          <rect x="68" y="75" width="64" height="64" rx="2" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" fill="none"/>
+          <circle cx="125" cy="148" r="2" fill="rgba(255,255,255,0.85)"/>
+        </g>
+      </svg>
+    </div>
+    <h2>Gira tu dispositivo</h2>
+    <p>Este dashboard luce mejor en <b>horizontal</b>.<br>Actívalo en pantalla completa para una experiencia óptima.</p>
+    <button class="submit-btn" id="fullscreen-btn">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M8 3H5a2 2 0 0 0-2 2v3"/>
+        <path d="M21 8V5a2 2 0 0 0-2-2h-3"/>
+        <path d="M3 16v3a2 2 0 0 0 2 2h3"/>
+        <path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
+      </svg>
+      Activar pantalla completa
+    </button>
+    <button class="rotate-secondary" id="dismiss-rotate">Ver así de todos modos</button>
+  </div>
+</div>
+
+<!-- ============================================
+     SCREEN 3: DASHBOARD APP
+============================================ -->
+<div id="app-screen">
+  <header class="app-header">
+    <div class="header-logos" id="header-logos-target"></div>
+    <div class="header-actions">
+      <button class="icon-btn" id="refresh-btn" title="Recargar dashboard" aria-label="Recargar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12a9 9 0 1 1-3-6.7L21 8"/>
+          <path d="M21 3v5h-5"/>
+        </svg>
+      </button>
+      <button class="icon-btn" id="fs-toggle-btn" title="Pantalla completa" aria-label="Pantalla completa">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8 3H5a2 2 0 0 0-2 2v3"/>
+          <path d="M21 8V5a2 2 0 0 0-2-2h-3"/>
+          <path d="M3 16v3a2 2 0 0 0 2 2h3"/>
+          <path d="M16 21h3a2 2 0 0 0 2-2v-3"/>
+        </svg>
+      </button>
+      <button class="icon-btn logout-btn" id="logout-btn" title="Cerrar sesión">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        <span class="label">Cerrar sesión</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="iframe-wrap">
+    <div class="iframe-loader" id="iframe-loader">
+      <div class="spinner-lg"></div>
+      <div>Cargando dashboard...</div>
+    </div>
+    <iframe id="dashboard-iframe" allowfullscreen frameborder="0"></iframe>
+  </div>
+</div>
+
+<script>
+/* ================================================================
+   CONFIG · CAMBIA ESTOS VALORES PARA TU CLIENTE
+================================================================ */
+const CONFIG = {
+  // Nombre que aparece en login y title
+  clientName: "Cliente",
+  dashboardLabel: "Dashboard Cliente",
+
+  // URL del Power BI publicada (Publish to web)
+  // Tu link va aquí. Recomendado agregar parámetros para esconder UI:
+  //   &chromeless=1   (oculta barras nativas de Power BI)
+  //   &filterPaneEnabled=false
+  //   &navContentPaneEnabled=false
+  dashboardUrl: "https://app.powerbi.com/view?r=eyJrIjoiMmUwYzhmYjMtMWU0Zi00ZDFhLWFiZmEtN2VlOTFlN2VlZjM4IiwidCI6ImRlMmJkZGZmLWZkMGItNDRjYS04ZmYwLTYyNjEwY2Y0ZWUzNiIsImMiOjR9&chromeless=1",
+
+  // Hash SHA-256 de la contraseña
+  // Cómo generar: en consola del navegador corre:
+  //   crypto.subtle.digest('SHA-256', new TextEncoder().encode('TU_PASSWORD'))
+  //     .then(b => console.log([...new Uint8Array(b)].map(x => x.toString(16).padStart(2,'0')).join('')))
+  // Default: hash de "demo123"
+  passwordHash: "d3ad9315b7be5dd53b31a273b3b3aba5defe700808305aa16a3062b76658a791",
+
+  // Logos: pueden ser URLs externas o paths locales (ej. "logo-cliente.svg")
+  // Si solo quieres uno, pon clientLogo y deja agencyLogo en null
+  clientLogo: null,    // ej: "logo-upn.svg"
+  agencyLogo: null,    // ej: "logo-reset.svg"
+
+  // Texto del footer
+  footerText: "© 2026 · Reset",
+
+  // Clave para localStorage (cámbiala si tienes varias instancias)
+  storageKey: "dashboard_session_v1"
+};
+
+/* ================================================================
+   LÓGICA · normalmente no hay que tocar nada de aquí abajo
+================================================================ */
+
+// Setea textos dinámicos
+document.title = CONFIG.dashboardLabel + " · Acceso";
+document.getElementById("login-dashboard-name").textContent = CONFIG.dashboardLabel;
+document.getElementById("footer-credit").textContent = CONFIG.footerText;
+
+// Inyecta logos
+function buildLogos(target) {
+  if (!CONFIG.clientLogo && !CONFIG.agencyLogo) {
+    target.innerHTML = '<div style="font-weight:700;font-size:18px;letter-spacing:0.05em">' + CONFIG.clientName.toUpperCase() + '</div>';
+    return;
+  }
+  let html = "";
+  if (CONFIG.clientLogo) html += `<img src="${CONFIG.clientLogo}" alt="${CONFIG.clientName}">`;
+  if (CONFIG.clientLogo && CONFIG.agencyLogo) html += `<div class="logo-divider"></div>`;
+  if (CONFIG.agencyLogo) html += `<img src="${CONFIG.agencyLogo}" alt="Agencia">`;
+  target.innerHTML = html;
+}
+buildLogos(document.getElementById("login-logos"));
+buildLogos(document.getElementById("header-logos-target"));
+
+// SHA-256 helper
+async function sha256(text) {
+  const buf = new TextEncoder().encode(text);
+  const hash = await crypto.subtle.digest("SHA-256", buf);
+  return [...new Uint8Array(hash)].map(b => b.toString(16).padStart(2, "0")).join("");
+}
+
+// Pantallas
+const loginScreen = document.getElementById("login-screen");
+const rotateScreen = document.getElementById("rotate-screen");
+const appScreen = document.getElementById("app-screen");
+const iframe = document.getElementById("dashboard-iframe");
+const loader = document.getElementById("iframe-loader");
+
+// Estado
+let isLoggedIn = false;
+
+function showLogin() {
+  loginScreen.style.display = "flex";
+  appScreen.classList.remove("active");
+  rotateScreen.classList.remove("active");
+}
+
+function showApp() {
+  loginScreen.style.display = "none";
+  appScreen.classList.add("active");
+  isLoggedIn = true;
+  // carga el iframe solo cuando logueado para no descargar el Power BI antes
+  if (!iframe.src) {
+    iframe.src = CONFIG.dashboardUrl;
+    iframe.addEventListener("load", () => loader.classList.add("hidden"), { once: true });
+    // fallback por si el evento no dispara
+    setTimeout(() => loader.classList.add("hidden"), 8000);
+  }
+  checkOrientation();
+}
+
+// ============================================
+// LOGIN
+// ============================================
+const passwordInput = document.getElementById("password-input");
+const submitBtn = document.getElementById("submit-btn");
+const submitLabel = document.getElementById("submit-label");
+const submitArrow = document.getElementById("submit-arrow");
+const rememberCheck = document.getElementById("remember-check");
+const eyeBtn = document.getElementById("toggle-eye");
+
+eyeBtn.addEventListener("click", () => {
+  passwordInput.type = passwordInput.type === "password" ? "text" : "password";
+  passwordInput.focus();
+});
+
+async function handleLogin() {
+  const value = passwordInput.value.trim();
+  if (!value) return;
+
+  // estado loading
+  submitBtn.disabled = true;
+  submitArrow.style.display = "none";
+  submitLabel.innerHTML = '<span class="spinner"></span>';
+
+  // pequeño delay artificial para que se sienta intencional
+  await new Promise(r => setTimeout(r, 350));
+
+  const hash = await sha256(value);
+
+  if (hash === CONFIG.passwordHash) {
+    if (rememberCheck.checked) {
+      localStorage.setItem(CONFIG.storageKey, hash);
+    } else {
+      sessionStorage.setItem(CONFIG.storageKey, hash);
+    }
+    submitLabel.textContent = "✓";
+    setTimeout(showApp, 200);
+  } else {
+    // shake + error
+    passwordInput.classList.remove("shake");
+    void passwordInput.offsetWidth; // reflow
+    passwordInput.classList.add("shake");
+    submitBtn.disabled = false;
+    submitLabel.textContent = "Entrar";
+    submitArrow.style.display = "inline";
+    passwordInput.value = "";
+    passwordInput.focus();
+  }
+}
+
+submitBtn.addEventListener("click", handleLogin);
+passwordInput.addEventListener("keydown", e => {
+  if (e.key === "Enter") handleLogin();
+});
+
+// Auto-login si hay sesión recordada
+(async function checkSession() {
+  const remembered = localStorage.getItem(CONFIG.storageKey) || sessionStorage.getItem(CONFIG.storageKey);
+  if (remembered === CONFIG.passwordHash) {
+    showApp();
+  }
+})();
+
+// ============================================
+// LOGOUT, REFRESH, FULLSCREEN
+// ============================================
+document.getElementById("logout-btn").addEventListener("click", () => {
+  localStorage.removeItem(CONFIG.storageKey);
+  sessionStorage.removeItem(CONFIG.storageKey);
+  iframe.src = "about:blank";
+  loader.classList.remove("hidden");
+  passwordInput.value = "";
+  rememberCheck.checked = false;
+  isLoggedIn = false;
+  showLogin();
+  exitFullscreen();
+});
+
+document.getElementById("refresh-btn").addEventListener("click", () => {
+  loader.classList.remove("hidden");
+  iframe.src = iframe.src; // forza reload
+});
+
+function enterFullscreen() {
+  const el = document.documentElement;
+  const fn = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+  if (fn) fn.call(el).catch(() => {});
+}
+function exitFullscreen() {
+  const fn = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+  if (document.fullscreenElement || document.webkitFullscreenElement) {
+    if (fn) fn.call(document).catch(() => {});
+  }
+}
+function isFullscreen() {
+  return !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement);
+}
+
+document.getElementById("fs-toggle-btn").addEventListener("click", () => {
+  if (isFullscreen()) exitFullscreen();
+  else enterFullscreen();
+});
+
+document.getElementById("fullscreen-btn").addEventListener("click", () => {
+  enterFullscreen();
+  // intenta forzar landscape (solo Android Chrome lo soporta)
+  if (screen.orientation && screen.orientation.lock) {
+    screen.orientation.lock("landscape").catch(() => {});
+  }
+  // ocultamos el prompt incluso si no se logró fullscreen
+  rotateScreen.classList.remove("active");
+});
+
+document.getElementById("dismiss-rotate").addEventListener("click", () => {
+  rotateScreen.classList.remove("active");
+  rotateDismissed = true;
+});
+
+// ============================================
+// ORIENTATION DETECTION (mobile portrait)
+// ============================================
+let rotateDismissed = false;
+const portraitMQ = window.matchMedia("(orientation: portrait) and (max-width: 900px)");
+
+function checkOrientation() {
+  if (!isLoggedIn) return;
+  if (portraitMQ.matches && !rotateDismissed) {
+    rotateScreen.classList.add("active");
+  } else {
+    rotateScreen.classList.remove("active");
+  }
+}
+
+portraitMQ.addEventListener("change", () => {
+  rotateDismissed = false; // reset cuando cambia orientación
+  checkOrientation();
+});
+
+// ============================================
+// PWA: SERVICE WORKER
+// ============================================
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(err => {
+      console.warn("SW registration failed:", err);
+    });
+  });
+}
+</script>
+</body>
+</html>
