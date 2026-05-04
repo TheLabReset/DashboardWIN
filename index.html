@@ -69,8 +69,11 @@
   #login-screen {
     position: fixed; inset: 0;
     display: flex; align-items: center; justify-content: center;
-    padding: 24px;
+    padding: max(24px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
     z-index: 10;
+    /* manipulation deshabilita doble-tap-zoom sin afectar taps legítimos.
+       El pinch-zoom en iOS se bloquea con gesturestart preventDefault. */
+    touch-action: manipulation;
   }
 
   .login-card {
@@ -278,7 +281,7 @@
     position: fixed; inset: 0;
     display: none;
     align-items: center; justify-content: center;
-    padding: 24px;
+    padding: max(24px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
     z-index: 20;
     background: rgba(10, 10, 10, 0.6);
     backdrop-filter: blur(24px) saturate(120%);
@@ -315,6 +318,15 @@
     0%, 18%   { transform: rotate(0deg); }
     42%, 68%  { transform: rotate(-90deg); }
     92%, 100% { transform: rotate(0deg); }
+  }
+  /* Variante "rotate-to-portrait": gira al revés, de horizontal a vertical */
+  .rotate-card.is-portrait-needed .phone-icon .phone-rotate {
+    animation: phoneRotateInv 2.6s cubic-bezier(.65, 0, .35, 1) infinite;
+  }
+  @keyframes phoneRotateInv {
+    0%, 18%   { transform: rotate(-90deg); }
+    42%, 68%  { transform: rotate(0deg); }
+    92%, 100% { transform: rotate(-90deg); }
   }
   @keyframes arcFlash {
     0%, 18%   { opacity: 0.25; }
@@ -373,8 +385,11 @@
 
   .app-header {
     flex: 0 0 auto;
-    height: 60px;
-    padding: 0 20px;
+    height: calc(60px + env(safe-area-inset-top, 0px));
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: 0;
+    padding-left: max(20px, env(safe-area-inset-left));
+    padding-right: max(20px, env(safe-area-inset-right));
     display: flex; align-items: center; justify-content: space-between;
     background: linear-gradient(180deg, #141414 0%, #0a0a0a 100%);
     border-bottom: 1px solid rgba(255, 107, 26, 0.12);
@@ -422,6 +437,10 @@
     position: relative;
     overflow: hidden;
     background: #fff;
+    /* Respeta el home indicator y bordes laterales en notch displays */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
   }
 
   .iframe-loader {
@@ -473,6 +492,40 @@
     border: 0;
     display: block;
   }
+
+  /* ============================================
+     FAUX FULLSCREEN MOBILE (oculta header, X flotante)
+  ============================================ */
+  body.is-fauxfs .app-header { display: none; }
+  body.is-fauxfs #floating-exit { display: flex; }
+  body.is-fauxfs .iframe-wrap {
+    /* En faux fullscreen, el wrap toma toda la pantalla; safe-area se aplica
+       al contenido para que la X y el iframe no queden bajo el notch. */
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  #floating-exit {
+    display: none;
+    position: fixed;
+    top: max(12px, env(safe-area-inset-top));
+    right: max(12px, env(safe-area-inset-right));
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(12px) saturate(120%);
+    -webkit-backdrop-filter: blur(12px) saturate(120%);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #ffffff;
+    align-items: center; justify-content: center;
+    cursor: pointer;
+    z-index: 50;
+    padding: 0;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+    transition: background 0.15s, transform 0.15s;
+  }
+  #floating-exit:hover { background: rgba(0, 0, 0, 0.8); }
+  #floating-exit:active { transform: scale(0.95); }
+  #floating-exit svg { width: 20px; height: 20px; }
 
   /* ============================================
      UPDATE BANNER (nueva versión disponible)
@@ -644,6 +697,13 @@
     </div>
   </header>
 
+  <button class="floating-exit" id="floating-exit" type="button" aria-label="Salir de pantalla completa" title="Salir de pantalla completa">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <line x1="6" y1="6" x2="18" y2="18"/>
+      <line x1="18" y1="6" x2="6" y2="18"/>
+    </svg>
+  </button>
+
   <div class="iframe-wrap">
     <div class="iframe-loader" id="iframe-loader">
       <div class="spinner-lg"></div>
@@ -786,6 +846,9 @@ function showLogin() {
   loginScreen.style.display = "flex";
   appScreen.classList.remove("active");
   rotateScreen.classList.remove("active");
+  isLoggedIn = false;
+  // Re-evalúa orientation: mobile landscape sin login pide girar a vertical.
+  checkOrientation();
 }
 
 function showApp() {
@@ -918,9 +981,9 @@ document.getElementById("logout-btn").addEventListener("click", () => {
   errorOverlay.classList.remove("active");
   passwordInput.value = "";
   rememberCheck.checked = false;
-  isLoggedIn = false;
   showLogin();
-  exitFullscreen();
+  // Limpia faux fullscreen (clase + lock + Fullscreen API real)
+  exitFauxFullscreen();
 });
 
 document.getElementById("refresh-btn").addEventListener("click", loadDashboard);
@@ -928,7 +991,15 @@ document.getElementById("refresh-btn").addEventListener("click", loadDashboard);
 function enterFullscreen() {
   const el = document.documentElement;
   const fn = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
-  if (fn) fn.call(el).catch(() => {});
+  if (!fn) return Promise.resolve();
+  try {
+    const result = fn.call(el);
+    return result && typeof result.then === "function"
+      ? result.catch(() => {})
+      : Promise.resolve();
+  } catch (_) {
+    return Promise.resolve();
+  }
 }
 function exitFullscreen() {
   const fn = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
@@ -941,10 +1012,46 @@ function isFullscreen() {
 }
 
 const fsToggleBtn = document.getElementById("fs-toggle-btn");
+const floatingExit = document.getElementById("floating-exit");
+
+// En mobile no podemos confiar en la Fullscreen API (iOS Safari y muchos
+// PWAs no la soportan en iframes). Hacemos un "faux fullscreen" que oculta
+// el header y muestra una X flotante para salir. Además intentamos lockear
+// la orientación a landscape (Android) y disparar el fullscreen real cuando
+// está disponible (Android Chrome lo permite).
+const isMobileLike = () =>
+  window.matchMedia("(pointer: coarse) and (max-width: 900px)").matches;
+
+function enterFauxFullscreen() {
+  document.body.classList.add("is-fauxfs");
+  // Android Chrome requiere fullscreen activo antes de poder lockear orientación.
+  // Encadenamos: primero fullscreen, después intentamos lock landscape.
+  const tryLock = () => {
+    if (screen.orientation && screen.orientation.lock) {
+      screen.orientation.lock("landscape").catch(() => {});
+    }
+  };
+  enterFullscreen().then(tryLock, tryLock);
+}
+function exitFauxFullscreen() {
+  document.body.classList.remove("is-fauxfs");
+  exitFullscreen();
+  if (screen.orientation && screen.orientation.unlock) {
+    try { screen.orientation.unlock(); } catch (_) {}
+  }
+}
+
 fsToggleBtn.addEventListener("click", () => {
-  if (isFullscreen()) exitFullscreen();
-  else enterFullscreen();
+  if (isMobileLike()) {
+    if (document.body.classList.contains("is-fauxfs")) exitFauxFullscreen();
+    else enterFauxFullscreen();
+  } else {
+    if (isFullscreen()) exitFullscreen();
+    else enterFullscreen();
+  }
 });
+
+floatingExit.addEventListener("click", exitFauxFullscreen);
 
 function syncFullscreenState() {
   const fs = isFullscreen();
@@ -956,12 +1063,9 @@ document.addEventListener("fullscreenchange", syncFullscreenState);
 document.addEventListener("webkitfullscreenchange", syncFullscreenState);
 
 document.getElementById("fullscreen-btn").addEventListener("click", () => {
-  enterFullscreen();
-  // intenta forzar landscape (solo Android Chrome lo soporta)
-  if (screen.orientation && screen.orientation.lock) {
-    screen.orientation.lock("landscape").catch(() => {});
-  }
-  // ocultamos el prompt incluso si no se logró fullscreen
+  // Faux fullscreen unificado: oculta header, X flotante, lock landscape,
+  // y dispara fullscreen real donde la API esté soportada.
+  enterFauxFullscreen();
   rotateScreen.classList.remove("active");
 });
 
@@ -974,9 +1078,10 @@ document.getElementById("dismiss-rotate").addEventListener("click", () => {
 // ORIENTATION DETECTION (mobile portrait)
 // ============================================
 let rotateDismissed = false;
-// pointer: coarse limita el prompt a dispositivos táctiles, evita ruido
+// pointer: coarse limita los prompts a dispositivos táctiles, evita ruido
 // en desktop con ventana angosta y en tablets grandes con teclado.
 const portraitMQ = window.matchMedia("(orientation: portrait) and (max-width: 900px) and (pointer: coarse)");
+const landscapeMQ = window.matchMedia("(orientation: landscape) and (max-width: 900px) and (pointer: coarse)");
 
 function isIOS() {
   return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
@@ -987,31 +1092,56 @@ function isStandalone() {
          window.navigator.standalone === true;
 }
 
-// Ajusta el copy del rotate prompt según la plataforma.
-// En iOS sin instalar, el fullscreen API no funciona, así que el camino útil
-// es instalar la app a la pantalla de inicio.
-function applyRotatePromptVariant() {
+// Aplica copy + clases del rotate prompt según el variant pedido.
+// Variants: "rotate-to-landscape" (default, pedir horizontal), "ios" (instala app),
+// "rotate-to-portrait" (pedir vertical, login).
+function setRotateCardVariant(variant) {
   const card = document.querySelector(".rotate-card");
   const h2 = card.querySelector("h2");
   const p = card.querySelector("p");
   const fsBtn = document.getElementById("fullscreen-btn");
-  if (isIOS() && !isStandalone()) {
+  const dismissBtn = document.getElementById("dismiss-rotate");
+
+  card.classList.remove("is-ios", "is-portrait-needed");
+
+  if (variant === "rotate-to-portrait") {
+    // Login obligatorio en vertical: sin escape ni botón dismiss
+    card.classList.add("is-portrait-needed");
+    h2.textContent = "Gira a vertical";
+    p.innerHTML = 'Para iniciar sesión, gira tu teléfono a <b>vertical</b>.';
+    fsBtn.style.display = "none";
+    dismissBtn.style.display = "none";
+    return;
+  }
+  if (variant === "ios") {
     card.classList.add("is-ios");
     h2.textContent = "Instala la app";
     p.innerHTML = 'Para una mejor experiencia, toca <b>Compartir</b> y luego <b>Añadir a pantalla de inicio</b>. Después abre el dashboard desde el ícono.';
     fsBtn.style.display = "none";
-  } else {
-    card.classList.remove("is-ios");
-    h2.textContent = "Gira tu dispositivo";
-    p.innerHTML = 'Este dashboard luce mejor en <b>horizontal</b>.<br>Actívalo en pantalla completa para una experiencia óptima.';
-    fsBtn.style.display = "";
+    dismissBtn.style.display = "";
+    return;
   }
+  // "rotate-to-landscape" (default)
+  h2.textContent = "Gira tu dispositivo";
+  p.innerHTML = 'Este dashboard luce mejor en <b>horizontal</b>.<br>Actívalo en pantalla completa para una experiencia óptima.';
+  fsBtn.style.display = "";
+  dismissBtn.style.display = "";
 }
-applyRotatePromptVariant();
 
 function checkOrientation() {
-  if (!isLoggedIn) return;
+  // Login: forzamos portrait. Si está landscape mobile, pedir girar a vertical.
+  if (!isLoggedIn) {
+    if (landscapeMQ.matches) {
+      setRotateCardVariant("rotate-to-portrait");
+      rotateScreen.classList.add("active");
+    } else {
+      rotateScreen.classList.remove("active");
+    }
+    return;
+  }
+  // Dashboard: pedir horizontal cuando estamos en portrait mobile.
   if (portraitMQ.matches && !rotateDismissed) {
+    setRotateCardVariant(isIOS() && !isStandalone() ? "ios" : "rotate-to-landscape");
     rotateScreen.classList.add("active");
   } else {
     rotateScreen.classList.remove("active");
@@ -1019,8 +1149,25 @@ function checkOrientation() {
 }
 
 portraitMQ.addEventListener("change", () => {
-  rotateDismissed = false; // reset cuando cambia orientación
+  rotateDismissed = false;
   checkOrientation();
+});
+landscapeMQ.addEventListener("change", checkOrientation);
+checkOrientation();
+
+// ============================================
+// BLOQUEAR PINCH-ZOOM EN LOGIN (iOS Safari y PWA)
+// ============================================
+// El doble-tap-zoom lo cubre touch-action: manipulation en CSS (#login-screen).
+// Para el pinch-zoom en iOS Safari (que ignora touch-action) interceptamos los
+// gestos propietarios de WebKit, solo mientras el login está visible.
+function loginVisible() {
+  return loginScreen.style.display !== "none";
+}
+["gesturestart", "gesturechange", "gestureend"].forEach(evt => {
+  document.addEventListener(evt, e => {
+    if (loginVisible()) e.preventDefault();
+  }, { passive: false });
 });
 
 // ============================================
